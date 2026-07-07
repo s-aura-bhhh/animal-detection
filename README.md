@@ -2,7 +2,7 @@
 
 Detects animals using a camera on a Raspberry Pi, classifies them with a TensorFlow Lite model, and turns on a different LED depending on the animal type (simulating a real deterrent like sirens, sprinklers, or ultrasonic repellers).
 
-**Demo video:** [Add Google Drive link here]
+**Demo video:** https://drive.google.com/file/d/1Gg1yMZYsT24E69Kwde6r915BNt_scm9f/view?usp=sharing
 
 ## Team
 
