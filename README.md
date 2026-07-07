@@ -1,93 +1,87 @@
-*Smart Animal Intrusion Detection and Deterrent System (Indoor Prototype)*
+# Smart Animal Intrusion Detection and Deterrent System (Indoor Prototype)
 
-_Team members_
+Detects animals using a camera on a Raspberry Pi, classifies them with a TensorFlow Lite model, and turns on a different LED depending on the animal type (simulating a real deterrent like sirens, sprinklers, or ultrasonic repellers).
 
-Kushagra Gupta – 2024MCB1299
-Mayank Kumar – 2024MCB1304
-Rushi Limbachiya – 2024MCB1301
-Manish Kumar Chatakunda – 2024MCB1302
-Saurabh Sharma – 2024MCB1311
+**Demo video:** https://drive.google.com/file/d/1Gg1yMZYsT24E69Kwde6r915BNt_scm9f/view?usp=sharing
 
-1. Introduction to the Problem
- 
-Animal intrusions into farm lands lead to serious agricultural losses and interfere with farming activities.
-Current preventions like scarecrows, fencing, and hand surveillance are inefficient, lacks flexibility, and are
-unable to react dynamically depending on the kind of animals. Therefore, we require an intelligent, automated
-system that can detect and deter animals efficiently.
+## Team
 
-2. Background and Contex
-  
-Recent advances in machine learning and the Internet of Things (IoT) make it possible to integrate visual
-detection with automatic control mechanisms. This type of integration enables smart decision-making and
-effective deterring. Outdoor testing, though, is fairly complicated owing to environmental factors and security
-issues. As such, we will be creating an indoor prototype that mimics animal intrusion via projected pictures
-offers a secure and efficient means of proving the potential of the system.
+- Kushagra Gupta - 2024MCB1299
+- Mayank Kumar - 2024MCB1304
+- Rushi Limbachiya - 2024MCB1301
+- Manish Kumar Chatakunda - 2024MCB1302
+- Saurabh Sharma - 2024MCB1311
 
-3. Project Objectives and Aims
-   
-→ The goal was to design a working indoor prototype for identification of different species of animals from
-live camera images.
-→ Automate effective deterrent reactions (LEDs, ultrasonic Repeller, water spray) according to recognized
-animals.
-→ To showcase edge-based AI inference with the IoT hardware.
-→ To evaluate the system's performance, accuracy, and responsiveness under various simulated scenarios.
+## How it works
 
-4. Components Used
-   
-1. Raspberry Pi 3 (1GB)
-2.Raspberry Pi Camera Module -5MP
-3.PIR Motion Sensor
-4. MAX 4466 Microphone Module
-5. LED Strobes, Buzzers
-6. MCP-3008 Analog to Digital Converter
-7. Jumper Wires
-8. Breadboard
-9. Optional (items issued but not used): GSM Module/Wi-Fi Module, LoRa Module
+1. `trigger.py` keeps checking a PIR motion sensor and a microphone (read through an MCP3008 ADC).
+2. When either one is triggered, it captures a 224x224 image using the Pi camera and saves it as `captured.jpg`.
+3. `animal_detector.py` loads the MobileNetV2 TFLite model and runs it on that image.
+4. It looks at the top prediction and checks which category it belongs to.
+5. Based on the category, it turns on the matching LED for 1 second, then turns it off.
 
-5. Workload Distribution
-   
-Mayank and Kushagra: Hardware installation and circuit integration, such as power regulation, sensor cabling.
-Rushi and Manish: Software development and control logic in Python, handling sensor inputs .
-Rushi, Manish and Saurabh: Development of machine learning model — dataset preparation, training, and
-optimization for real-time identification.
-Kushagra and Saurabh: System integration, synchronization of hardware and ML components, and end-to-end
-debugging.
-Kushagra: System performance evaluation, and report preparation and presentation materials.
-All members contributed as a team to documentation, project demonstration, and troubleshooting at each
-stage to provide continuous and balanced involvement.
+## Categories and GPIO pins
 
-6. Design and Implementation: -
-   
--> The whole project works on raspberry pi 3, using a 32-bit OS. The ML model is integrated in the pi and
-runs locally.
--> We are using a raspberry pi camera module (5MP) for live image feed, MAX4466 microphone module
-for live audio detection and PIR motion sensor as well for triggering the system.
--> The ML model processes the live image clicked by the camera and checks for any animal which can
-harm the crops. If it detects one, it appropriately turns on respective mitigation device, preprogrammed to run for the specific animal.
--> We have programmed the following mitigation devices according to the animal class detected as
-given here: -
+| Category | Examples | GPIO pins |
+|---|---|---|
+| Dangerous predators | tiger, lion, wild boar, wolf | 12, 20, 21, 22, 23 |
+| Large herbivores | elephant, zebra, rhino | 13 |
+| Livestock/working animals | ox, bison, hog | 20 |
+| Pets | dogs, cats | 21 |
+| Birds | crows, waterfowl, birds of prey | 22 |
+| Small animals/reptiles | rodents, rabbits, snakes, lizards | 23 |
 
-1. Wild Animals (wild boar, tiger, lion etc.) – Ground level traps/sirens/ drone flight
-2. Stray animals (rabbits, rodents, monkey etc.) – Ultrasonic repellents/ sprinklers/ flashing
-lights/ alarms sound.
-3. Birds – loudspeakers with distress calls
--> All these mitigation devices are being simulated using LEDs and Buzzers.
+## Tech involved
 
-7. Challenges in Addressing the Problem
-   
--> The primary difficulties in designing such a system are to attain high detection precision with lowresource machine learning models while having the reliable control of hardware with low latency,
-efficient fusion of multiple sensor inputs and stable power sharing in an indoor setting.
--> The main challenges we faced during the making of this project are listed below: -
--> Computational power of raspberry pi 3 was very low, due to which we had to shift to a low-resource
-ML model which uses TensorFlow lite.
--> The camera module stopped working and thus we couldn’t integrate it with the software for a long
-time.
--> The microphone provided (MAX4466) did not have enough sampling rate to process and classify the
-audio inputs into different animal classes.
+The whole thing runs locally on the Pi, no cloud calls needed for inference. We use TensorFlow Lite (through the `tflite_runtime` package) because the Pi 3 doesn't have the power to run a full TensorFlow model at a usable speed, and MobileNetV2 is a small, efficient model that still gives decent accuracy for image classification. The image is captured using `rpicam-still`, then resized and normalized with Pillow and NumPy before being fed into the model. Sensor reading is done with `RPi.GPIO` for the PIR sensor and `spidev` for talking to the MCP3008 ADC, since the Pi's GPIO pins can only read digital signals and the microphone gives an analog output. Everything is written in plain Python and runs as two scripts, one for sensing and capture, and one for classification and LED control.
 
-8. Conclusion
-    
-The Smart Animal Intrusion Detection and Deterrent System illustrate the successful implementation of AI and
-IoT towards agricultural innovation. The indoor prototype we have developed is a controlled, safe, and
-sensible model to illustrate how smart systems are able to recognize and deter animals on their own. This
-project not only proves the viability of AI-based protection for crops but also sets up a scalable model for realworld applications.
+## Hardware used
+
+- Raspberry Pi 3 (1GB)
+- Pi Camera Module (5MP)
+- PIR motion sensor
+- MAX4466 microphone
+- MCP3008 ADC
+- LEDs/buzzers
+- Breadboard and jumper wires
+
+## Files
+
+- `trigger.py` - runs the sensor loop and captures images
+- `animal_detector.py` - runs the model and controls the LEDs
+- `imagenet_classes.txt` - class labels used by the model
+- `mobilenetv2_imagenet.tflite` - the model file
+- `captured.jpg` - last captured image
+
+## Setup
+
+```bash
+sudo apt update
+sudo apt install -y python3-pip rpicam-apps
+pip3 install tflite-runtime numpy pillow requests RPi.GPIO spidev
+```
+
+Turn on SPI first: `sudo raspi-config` -> Interface Options -> SPI -> Enable.
+
+Wiring:
+- PIR sensor -> GPIO 17
+- Microphone -> MCP3008 channel 0 -> SPI0
+- LEDs -> GPIO 12, 13, 20, 21, 22, 23
+
+## Running it
+
+Run the full system:
+
+```bash
+python3 trigger.py
+```
+
+Press Ctrl+C to stop.
+
+To test the model on one image directly, without the sensors:
+
+```bash
+python3 animal_detector.py --image captured.jpg
+```
+
+You can also pass `--model` (path to the tflite file) and `--top_k` (how many predictions to show).
